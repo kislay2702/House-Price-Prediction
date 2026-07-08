@@ -1,5 +1,5 @@
-"# House-Price-Prediction-Model-" 
 
+House Price Prediction Model
 
 A production-styled Flask web app that serves a Random Forest model trained
 on the Ames Housing dataset. Enter ~20 key property details and get an
