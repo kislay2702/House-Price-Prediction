@@ -1,0 +1,1 @@
+Hero background is loaded from Unsplash (see static/style.css .hero rule) to keep repo size small and avoid bundling a licensed binary. Drop a local house.jpg here and update the CSS url() if you'd rather self-host it.

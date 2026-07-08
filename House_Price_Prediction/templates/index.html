@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estate&nbsp;IQ — AI House Price Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero" id="top">
+  <div class="hero__overlay"></div>
+  <nav class="nav">
+    <div class="nav__brand">Estate<span>IQ</span></div>
+    <a href="#estimate" class="nav__cta">Get an estimate</a>
+  </nav>
+
+  <div class="hero__content">
+    <p class="hero__eyebrow">Ames, Iowa · Random Forest Valuation Model</p>
+    <h1 class="hero__title">Know what a house<br>is <em>actually</em> worth.</h1>
+    <p class="hero__subtitle">
+      Estate IQ runs your home's details through a Random Forest model
+      trained on the Ames Housing dataset — twenty inputs, one considered
+      number, in under a second.
+    </p>
+    <a href="#estimate" class="btn btn--gradient">
+      Start your estimate
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+
+  <div class="hero__scroll">
+    <span></span> Scroll
+  </div>
+</header>
+
+<!-- ===================== FORM ===================== -->
+<main>
+<section class="estimate" id="estimate">
+  <div class="estimate__intro">
+    <p class="section-eyebrow">01 — The details</p>
+    <h2>Tell us about the property</h2>
+    <p class="section-lede">
+      We only ask for the features that move the model most.
+      Everything else — porches, basement finish ratio, garage year — is
+      filled in automatically from the training data's typical values.
+    </p>
+  </div>
+
+  <div class="glass-card">
+    <form id="predict-form" novalidate>
+
+      <fieldset class="form-section">
+        <legend>Size &amp; Layout</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="GrLivArea">Ground Living Area <span>sq ft</span></label>
+            <input type="number" id="GrLivArea" name="GrLivArea" min="200" max="10000" value="1500" required>
+          </div>
+          <div class="field">
+            <label for="TotalBsmtSF">Total Basement Area <span>sq ft</span></label>
+            <input type="number" id="TotalBsmtSF" name="TotalBsmtSF" min="0" max="6000" value="800" required>
+          </div>
+          <div class="field">
+            <label for="LotArea">Lot Area <span>sq ft</span></label>
+            <input type="number" id="LotArea" name="LotArea" min="500" max="250000" value="9000" required>
+          </div>
+          <div class="field">
+            <label for="FullBath">Full Bathrooms</label>
+            <input type="number" id="FullBath" name="FullBath" min="0" max="5" value="2" required>
+          </div>
+          <div class="field">
+            <label for="HalfBath">Half Bathrooms</label>
+            <input type="number" id="HalfBath" name="HalfBath" min="0" max="3" value="1" required>
+          </div>
+          <div class="field">
+            <label for="HouseStyle">House Style</label>
+            <select id="HouseStyle" name="HouseStyle" required>
+              {% for style in house_styles %}
+              <option value="{{ style }}" {% if style == '2Story' %}selected{% endif %}>{{ style }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Quality &amp; Condition</legend>
+        <div class="grid">
+          <div class="field field--range">
+            <label for="OverallQual">Overall Quality <span id="OverallQual-val">6</span>/10</label>
+            <input type="range" id="OverallQual" name="OverallQual" min="1" max="10" value="6" required>
+          </div>
+          <div class="field field--range">
+            <label for="OverallCond">Overall Condition <span id="OverallCond-val">5</span>/10</label>
+            <input type="range" id="OverallCond" name="OverallCond" min="1" max="10" value="5" required>
+          </div>
+          <div class="field">
+            <label for="KitchenQual">Kitchen Quality</label>
+            <select id="KitchenQual" name="KitchenQual" required>
+              {% for q in quality_options %}
+              <option value="{{ q }}" {% if q == 'TA' %}selected{% endif %}>{{ q }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="ExterQual">Exterior Quality</label>
+            <select id="ExterQual" name="ExterQual" required>
+              {% for q in quality_options %}
+              <option value="{{ q }}" {% if q == 'TA' %}selected{% endif %}>{{ q }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="BsmtQual">Basement Quality</label>
+            <select id="BsmtQual" name="BsmtQual" required>
+              {% for q in bsmt_quality_options %}
+              <option value="{{ q }}" {% if q == 'TA' %}selected{% endif %}>{{ q }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="CentralAir">Central Air</label>
+            <select id="CentralAir" name="CentralAir" required>
+              <option value="Y" selected>Yes</option>
+              <option value="N">No</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Garage &amp; Age</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="GarageCars">Garage Capacity <span>cars</span></label>
+            <input type="number" id="GarageCars" name="GarageCars" min="0" max="5" value="2" required>
+          </div>
+          <div class="field">
+            <label for="GarageArea">Garage Area <span>sq ft</span></label>
+            <input type="number" id="GarageArea" name="GarageArea" min="0" max="1500" value="480" required>
+          </div>
+          <div class="field">
+            <label for="GarageType">Garage Type</label>
+            <select id="GarageType" name="GarageType" required>
+              {% for g in garage_types %}
+              <option value="{{ g }}" {% if g == 'Attchd' %}selected{% endif %}>{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="YearBuilt">Year Built</label>
+            <input type="number" id="YearBuilt" name="YearBuilt" min="1870" max="2026" value="2000" required>
+          </div>
+          <div class="field">
+            <label for="YearRemodAdd">Year Remodeled</label>
+            <input type="number" id="YearRemodAdd" name="YearRemodAdd" min="1870" max="2026" value="2005" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="form-section">
+        <legend>Location &amp; Sale</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="Neighborhood">Neighborhood</label>
+            <select id="Neighborhood" name="Neighborhood" required>
+              {% for n in neighborhoods %}
+              <option value="{{ n }}" {% if n == 'NAmes' %}selected{% endif %}>{{ n }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="MSZoning">Zoning Classification</label>
+            <select id="MSZoning" name="MSZoning" required>
+              {% for z in mszonings %}
+              <option value="{{ z }}" {% if z == 'RL' %}selected{% endif %}>{{ z }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="SaleCondition">Sale Condition</label>
+            <select id="SaleCondition" name="SaleCondition" required>
+              {% for s in sale_conditions %}
+              <option value="{{ s }}" {% if s == 'Normal' %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" id="reset-btn">Reset form</button>
+        <button type="submit" class="btn btn--gradient" id="submit-btn">
+          <span class="btn-label">Estimate price</span>
+          <span class="btn-spinner" hidden></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== RESULT ===================== -->
+<section class="result" id="result-section" hidden>
+  <div class="glass-card result-card">
+    <p class="section-eyebrow">02 — The estimate</p>
+    <p class="result-card__label">Estimated House Price</p>
+    <p class="result-card__price" id="result-price">₹ 0</p>
+    <p class="result-card__usd" id="result-usd"></p>
+    <div class="result-card__meta">
+      <div>
+        <span>Model</span>
+        <strong>Random Forest · 100 trees</strong>
+      </div>
+      <div>
+        <span>Test R²</span>
+        <strong>0.884</strong>
+      </div>
+      <div>
+        <span>Avg. error (MAE)</span>
+        <strong>≈ $16,858</strong>
+      </div>
+    </div>
+    <button class="btn btn--ghost" id="predict-again-btn">Estimate another property</button>
+  </div>
+</section>
+
+<!-- ===================== HISTORY ===================== -->
+<section class="history" id="history-section" hidden>
+  <p class="section-eyebrow">03 — This session</p>
+  <h2>Your recent estimates</h2>
+  <div class="history__list" id="history-list"></div>
+</section>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="nav__brand">Estate<span>IQ</span></div>
+      <p>An end-to-end machine learning portfolio project — Random Forest
+        Regressor trained on the Ames Housing dataset, served with Flask.</p>
+    </div>
+    <div class="footer__cols">
+      <div>
+        <h4>Model</h4>
+        <p>RandomForestRegressor</p>
+        <p>scikit-learn · 100 estimators</p>
+      </div>
+      <div>
+        <h4>Data</h4>
+        <p>Ames Housing Dataset</p>
+        <p>1,460 property records</p>
+      </div>
+      <div>
+        <h4>Stack</h4>
+        <p>Flask · pandas · scikit-learn</p>
+        <p>Vanilla JS · CSS</p>
+      </div>
+    </div>
+  </div>
+  <p class="footer__legal">Estimates are for illustrative purposes only and
+    are not a substitute for a professional appraisal.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
